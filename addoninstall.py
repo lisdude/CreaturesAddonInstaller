@@ -1,9 +1,10 @@
 from argparse import ArgumentParser
 from pathlib import Path
 from shutil import copy
+from filecmp import cmp
 
 # Globals
-version = "0.1"
+version = "0.2"
 
 # Cos is 0 here because its location is game-dependant, but it still needs to be present
 # because this dictionary is used as the basis of the file search.
@@ -75,6 +76,8 @@ def backup(game):
             current_file = source / file.name
             if not current_file.exists():
                 print("SKIPPED: '" + file.name + "' from '" + file.parent.name + "' doesn't exist in current install. Nothing to backup.")
+            elif cmp(current_file, file):
+                print("SKIPPED: Currently installed '" + file.name + " is already from '" + file.parent.name + "'.")
             else:
                 print("Backing up '" + file.name + "' from '" + file.parent.name + "'...")
                 backup.mkdir(parents=True, exist_ok=True)
