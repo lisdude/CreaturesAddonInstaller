@@ -4,7 +4,7 @@ from shutil import copy
 from filecmp import cmp
 
 # Globals
-version = "0.2"
+version = "0.3"
 
 # Cos is 0 here because its location is game-dependant, but it still needs to be present
 # because this dictionary is used as the basis of the file search.
@@ -16,6 +16,11 @@ filetypes = {
     "catalogue": "Catalogue",
     "wav": "Sounds",
     "mng": "Sounds"
+}
+
+file_exceptions = {
+    "!DS splash map.cos": "Bootstrap/000 Switcher",
+    "DS Music.cos": "Bootstrap/000 Switcher"
 }
 
 full_name = {"C3": "Creatures 3", "DS": "Docking Station"}
@@ -54,10 +59,18 @@ args = parser.parse_args()
 ##
 
 # Return the target directory for the given file extension.
-def filetype_dir(game, extension):
+def filetype_dir(game, file):
+    name = file.name
+    extension = file.suffix.replace(".", "")
     # Cos is a special case because its destination depends on the game.
     if extension == "cos":
-        return "Bootstrap/" + ("001 World" if game == "C3" else "010 Docking Station")
+        # Some fixes have special exceptions. If there are enough add-ons like this,
+        # we may have to come up with a more clever solution.
+        exceptioned = file_exceptions.get(file.name, 0)
+        if exceptioned != 0:
+            return exceptioned
+        else:
+            return "Bootstrap/" + ("001 World" if game == "C3" else "010 Docking Station")
     else:
         return filetypes.get(extension, 0)
 
@@ -65,11 +78,11 @@ def filetype_dir(game, extension):
 def backup(game):
     file_list = args.input_dir / game
     for extension in filetypes:
-        # Directory Creatures stores this filetype in (e.g. Images):
-        filetype_directory = filetype_dir(game, extension)
-        # Path to the appropriate directory for the current Creatures install (e.g. /Creatures 3/Images):
-        source = args.creatures_dir / full_name[game] / filetype_directory
         for file in file_list.glob("**/*." + extension):
+            # Directory Creatures stores this filetype in (e.g. Images):
+            filetype_directory = filetype_dir(game, file)
+            # Path to the appropriate directory for the current Creatures install (e.g. /Creatures 3/Images):
+            source = args.creatures_dir / full_name[game] / filetype_directory
             # Path to our backup location (e.g. Backups/Creatures 3/My Cool Patch/Images):
             backup = args.backup_dir / full_name[game] / file.parent.name / filetype_directory
             # Full path to the actual file in the current Creatures install (e.g. /Creatures 3/Images/worm.c16):
@@ -87,11 +100,11 @@ def backup(game):
 def install(game):
     file_list = args.input_dir / game
     for extension in filetypes:
-        # Directory Creatures stores this filetype in (e.g. Images):
-        filetype_directory = filetype_dir(game, extension)
-        # Path to the appropriate directory for the current Creatures install (e.g. /Creatures 3/Images):
-        dest = args.creatures_dir / full_name[game] / filetype_directory
         for file in file_list.glob("**/*." + extension):
+            # Directory Creatures stores this filetype in (e.g. Images):
+            filetype_directory = filetype_dir(game, file)
+            # Path to the appropriate directory for the current Creatures install (e.g. /Creatures 3/Images):
+            dest = args.creatures_dir / full_name[game] / filetype_directory
             print("Copying '" + file.name + "' from '" + file.parent.name + "'...")
             copy(file, dest)
 
@@ -100,11 +113,11 @@ def install(game):
 def uninstall(game):
     file_list = args.input_dir / game
     for extension in filetypes:
-        # Directory Creatures stores this filetype in (e.g. Images):
-        filetype_directory = filetype_dir(game, extension)
-        # Path to the appropriate directory for the current Creatures install (e.g. /Creatures 3/Images):
-        dest = args.creatures_dir / full_name[game] / filetype_directory
         for file in file_list.glob("**/*." + extension):
+            # Directory Creatures stores this filetype in (e.g. Images):
+            filetype_directory = filetype_dir(game, file)
+            # Path to the appropriate directory for the current Creatures install (e.g. /Creatures 3/Images):
+            dest = args.creatures_dir / full_name[game] / filetype_directory
             # Path to our backup location (e.g. Backups/Creatures 3/My Cool Patch/Images):
             backup = args.backup_dir / full_name[game] / file.parent.name / filetype_directory
             # Full path to the actual file in the current Creatures install (e.g. /Creatures 3/Images/worm.c16):
