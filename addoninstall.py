@@ -30,30 +30,32 @@ full_name = {"C3": "Creatures 3", "DS": "Docking Station"}
 parser = ArgumentParser()
 
 parser.add_argument("-i", "--input_dir",
-type=Path,
+type = Path,
 metavar = "PATH",
 default = Path().absolute(),
-help="The path to the input directory containing the add-ons to install.")
+help = "The path to the input directory containing the add-ons to install.")
 
 parser.add_argument("-b", "--backup_dir",
-type=Path, 
+type = Path, 
 metavar = "PATH",
 default = Path().home() / "Documents" / "Creatures Patch Backups",
-help="The path to the directory where backups of the original game files are stored.")
+help = "The path to the directory where backups of the original game files are stored.")
 
 parser.add_argument("-c", "--creatures_dir",
-type=Path, 
+type = Path, 
 metavar = "PATH",
 default = Path().home() / "Documents" / "Creatures",
-help="The path to your Creatures Exodus installation.")
+help = "The path to your Creatures Exodus installation.")
 
 parser.add_argument("-s", "--skip_backup",
-action="store_true",
+action = "store_true",
 help = "Don't create any backups, just install patches and add-ons.")
 
 parser.add_argument("-u", "--uninstall",
 action = "store_true",
 help = "Uninstall add-ons and restore any original files from backups (if available).")
+
+parser.add_argument("--version", action = "store_true", help = "Display the version number.")
 
 args = parser.parse_args()
 ##
@@ -131,25 +133,26 @@ def uninstall(game):
 
 
 def main():
-    print("Creatures Exodus Add-on Installer v" + version + "\n")
-    print("Source directory: " + str(args.input_dir))
-    print("Backup directory: " + str(args.backup_dir))
-    print("Creatures directory: " + str(args.creatures_dir) + "\n")
-    if args.uninstall:
-        print("Uninstalling...")
-        uninstall("C3")
-        uninstall("DS")
-    else:
-        if args.skip_backup:
-            print("Skipping backups...")
+    print("Creatures Exodus Add-on Installer v" + version)
+    if not args.version:
+        print("\nSource directory: " + str(args.input_dir))
+        print("Backup directory: " + str(args.backup_dir))
+        print("Creatures directory: " + str(args.creatures_dir) + "\n")
+        if args.uninstall:
+            print("Uninstalling...")
+            uninstall("C3")
+            uninstall("DS")
         else:
-            print("Creating backups...")
-            backup("C3")
-            backup("DS")
-        print("Installing add-ons...")
-        install("C3")
-        install("DS")
-    print("\nDone!")
+            if args.skip_backup:
+                print("Skipping backups...")
+            else:
+                print("Creating backups...")
+                backup("C3")
+                backup("DS")
+            print("Installing add-ons...")
+            install("C3")
+            install("DS")
+        print("\nDone!")
 
 if __name__ == "__main__":
     main()
